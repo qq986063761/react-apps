@@ -16,6 +16,22 @@ const counterReducer = (state, action) => {
 }
 
 /**
+ * createContext 示例 - 主题上下文
+ * createContext 创建一个上下文对象，用于在组件树中共享数据
+ * 作用：避免通过 props 逐层传递数据，实现跨组件数据共享
+ * 优势：简化组件间通信，避免 prop drilling 问题
+ */
+const ThemeContext = createContext()
+
+/**
+ * useContext 示例 - 用户上下文
+ * useContext 用于消费上下文中的值
+ * 作用：在函数组件中订阅上下文的变化
+ * 优势：简化上下文的使用，避免 Consumer 组件的嵌套
+ */
+const UserContext = createContext()
+
+/**
  * 自定义 Hook 示例 - 逻辑复用
  * 自定义 Hook 是一个以 "use" 开头的函数，可以调用其他 Hook
  * 作用：将组件逻辑提取到可重用的函数中，实现逻辑复用
@@ -27,6 +43,90 @@ function useCounter(initialValue = 0) {
   const decrement = useCallback(() => setCount(prev => prev - 1), [])
   const reset = useCallback(() => setCount(initialValue), [initialValue])
   return { count, increment, decrement, reset }
+}
+
+/**
+ * 主题切换组件 - createContext 示例
+ */
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light')
+  
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }
+  
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  )
+}
+
+/**
+ * 主题显示组件 - useContext 示例
+ */
+function ThemeDisplay() {
+  const { theme, toggleTheme } = useContext(ThemeContext)
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      backgroundColor: theme === 'light' ? '#f0f0f0' : '#333',
+      color: theme === 'light' ? '#333' : '#fff',
+      borderRadius: '8px',
+      margin: '10px 0'
+    }}>
+      <h4>当前主题: {theme === 'light' ? '浅色' : '深色'}</h4>
+      <button onClick={toggleTheme}>
+        切换到 {theme === 'light' ? '深色' : '浅色'} 主题
+      </button>
+    </div>
+  )
+}
+
+/**
+ * 用户信息组件 - useContext 示例
+ */
+function UserProfile() {
+  const user = useContext(UserContext)
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      border: '2px solid #007bff',
+      borderRadius: '8px',
+      margin: '10px 0'
+    }}>
+      <h4>用户信息</h4>
+      <p><strong>姓名:</strong> {user.name}</p>
+      <p><strong>邮箱:</strong> {user.email}</p>
+      <p><strong>角色:</strong> {user.role}</p>
+    </div>
+  )
+}
+
+/**
+ * useCounter 演示组件
+ */
+function CounterDemo() {
+  const { count, increment, decrement, reset } = useCounter(0)
+  
+  return (
+    <div style={{ 
+      padding: '20px', 
+      border: '2px solid #28a745',
+      borderRadius: '8px',
+      margin: '10px 0'
+    }}>
+      <h4>自定义 Hook 计数器</h4>
+      <p>当前计数: {count}</p>
+      <div className="button-group">
+        <button onClick={increment}>增加</button>
+        <button onClick={decrement}>减少</button>
+        <button onClick={reset}>重置</button>
+      </div>
+    </div>
+  )
 }
 
 function ReactAPIDemo() {
@@ -121,7 +221,10 @@ function ReactAPIDemo() {
     { id: 'useMemo', label: 'useMemo' },
     { id: 'useCallback', label: 'useCallback' },
     { id: 'useRef', label: 'useRef' },
-    { id: 'useReducer', label: 'useReducer' }
+    { id: 'useReducer', label: 'useReducer' },
+    { id: 'useCounter', label: 'useCounter' },
+    { id: 'createContext', label: 'createContext' },
+    { id: 'useContext', label: 'useContext' }
   ]
 
   const renderDemo = () => {
@@ -249,6 +352,61 @@ function ReactAPIDemo() {
                 <button onClick={() => dispatch({ type: 'decrement' })}>减少</button>
                 <button onClick={() => dispatch({ type: 'reset' })}>重置</button>
               </div>
+            </div>
+          </div>
+        )
+
+      case 'useCounter':
+        return (
+          <div className="demo-section">
+            <h3>useCounter - 自定义 Hook</h3>
+            <div className="demo-description">
+              <p><strong>功能：</strong>自定义 Hook 实现逻辑复用，将组件逻辑提取到可重用的函数中</p>
+              <p><strong>特点：</strong>以 "use" 开头，可以调用其他 Hook，实现逻辑复用</p>
+              <p><strong>使用场景：</strong>多个组件需要相同的状态逻辑时，减少代码重复</p>
+            </div>
+            <div className="demo-item">
+              <CounterDemo />
+            </div>
+          </div>
+        )
+
+      case 'createContext':
+        return (
+          <div className="demo-section">
+            <h3>createContext - 上下文创建</h3>
+            <div className="demo-description">
+              <p><strong>功能：</strong>创建一个上下文对象，用于在组件树中共享数据</p>
+              <p><strong>特点：</strong>避免通过 props 逐层传递数据，实现跨组件数据共享</p>
+              <p><strong>使用场景：</strong>主题切换、用户信息、语言设置等全局状态</p>
+            </div>
+            <div className="demo-item">
+              <p>主题切换示例 - 使用 createContext 创建主题上下文</p>
+              <ThemeProvider>
+                <ThemeDisplay />
+              </ThemeProvider>
+            </div>
+          </div>
+        )
+
+      case 'useContext':
+        return (
+          <div className="demo-section">
+            <h3>useContext - 上下文消费</h3>
+            <div className="demo-description">
+              <p><strong>功能：</strong>在函数组件中订阅上下文的变化</p>
+              <p><strong>特点：</strong>简化上下文的使用，避免 Consumer 组件的嵌套</p>
+              <p><strong>使用场景：</strong>消费全局状态、主题、用户信息等上下文数据</p>
+            </div>
+            <div className="demo-item">
+              <p>用户信息示例 - 使用 useContext 消费用户上下文</p>
+              <UserContext.Provider value={{
+                name: '张三',
+                email: 'zhangsan@example.com',
+                role: '管理员'
+              }}>
+                <UserProfile />
+              </UserContext.Provider>
             </div>
           </div>
         )

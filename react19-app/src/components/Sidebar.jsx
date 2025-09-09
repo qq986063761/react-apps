@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { generateMenuConfig } from '../utils/routeUtils'
-import routes from '../routes'
+import routes from '../routes.jsx'
 import './Sidebar.css'
 
 function Sidebar() {
